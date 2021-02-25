@@ -2,6 +2,27 @@
 
 touch /etc/crontabs/root
 
+# Modify default IP
+sed -i 's/192.168.1.1/10.10.10.1/g' package/base-files/files/bin/config_generate
+sed -i 's/OpenWrt/iNet/g' package/base-files/files/bin/config_generate
+sed -i 's/US/CN/g ; s/OpenWrt/iNet/g ; s/none/psk-mixed/g' package/kernel/mac80211/files/lib/wifi/mac80211.sh
+sed -i '/^EOF/i \            \set wireless.default_radio${devidx}.key=567890321' package/kernel/mac80211/files/lib/wifi/mac80211.sh
+#echo 'Model '
+sed -i 's/HNET C108/Mifi/g' target/linux/ramips/dts/mt7620a_hnet_c108.dts
+sed -i 's/wwan0/usb0/g' target/linux/ramips/mt7620/base-files/etc/board.d/01_leds
+#echo 'DHCP'
+uci set network.RNDIS=interface
+uci set network.RNDIS.ifname=usb0
+uci set network.RNDIS.proto=dhcp
+uci set network.RNDISv6=interface
+uci set network.RNDISv6.ifname=usb0
+uci set network.RNDISv6.proto=dhcpv6
+uci set network.RNDISv6.reqaddress=try
+uci set network.RNDISv6.reqprefix=auto
+uci commit network
+uci set firewall.@zone[1].network='wan wan6 RNDIS RNDISv6'
+uci commit firewall
+
 uci set luci.main.lang=zh_cn
 #设置默认主题
 #uci set luci.main.mediaurlbase=/luci-static/bootstrap_mod
@@ -14,14 +35,19 @@ uci commit system
 uci set fstab.@global[0].anon_mount=1
 uci commit fstab
 
+# rm -f /usr/lib/lua/luci/view/admin_status/index/mwan.htm
+# rm -f /usr/lib/lua/luci/view/admin_status/index/upnp.htm
+# rm -f /usr/lib/lua/luci/view/admin_status/index/ddns.htm
+# rm -f /usr/lib/lua/luci/view/admin_status/index/minidlna.htm
+
 ln -sf /sbin/ip /usr/bin/ip
 
-sed -i '/lienol/d' /etc/opkg/distfeeds.conf
+#sed -i '/lienol/d' /etc/opkg/distfeeds.conf
 #sed -i 's/downloads.openwrt.org/openwrt.proxy.ustclug.org/g' /etc/opkg/distfeeds.conf
 #sed -i 's/http/https/g' /etc/opkg/distfeeds.conf
 sed -i "s/# //g" /etc/opkg/distfeeds.conf
 
-#sed -i 's/root::0:0:99999:7:::/root:$1$V4UetPzk$CYXluq4wUazHjmCDBCqXF.:0:0:99999:7:::/g' /etc/shadow
+sed -i 's/root::0:0:99999:7:::/root:$1$V4UetPzk$CYXluq4wUazHjmCDBCqXF.:0:0:99999:7:::/g' /etc/shadow
 
 #uci set dhcp.lan.ra='server'
 #uci set dhcp.lan.dhcpv6='server'
@@ -50,7 +76,7 @@ sed -i '/DISTRIB_DESCRIPTION/d' /etc/openwrt_release
 echo "DISTRIB_DESCRIPTION='OpenWrt SNAPSHOT '" >> /etc/openwrt_release
 
 # 删除状态页不需显示的
-rm -rf /usr/lib/lua/luci/view/admin_status/index
+#rm -rf /usr/lib/lua/luci/view/admin_status/index
 #mv -f /usr/lib/lua/luci/view/admin_status/index /usr/lib/lua/luci/view/admin_status/index_backup 2>/dev/null
 
 #禁用某些可能会自启动且用不上的依赖包服务
