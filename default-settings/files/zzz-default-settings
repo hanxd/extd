@@ -1,5 +1,26 @@
 #!/bin/sh
 
+# Modify default IP
+sed -i 's/192.168.1.1/10.10.10.1/g' package/base-files/files/bin/config_generate
+sed -i 's/OpenWrt/iNet/g' package/base-files/files/bin/config_generate
+sed -i 's/US/CN/g ; s/OpenWrt/iNet/g ; s/none/psk-mixed/g' package/kernel/mac80211/files/lib/wifi/mac80211.sh
+sed -i '/^EOF/i \            \set wireless.default_radio${devidx}.key=567890321' package/kernel/mac80211/files/lib/wifi/mac80211.sh
+#echo 'Model '
+sed -i 's/HNET C108/Mifi/g' target/linux/ramips/dts/mt7620a_hnet_c108.dts
+sed -i 's/wwan0/usb0/g' target/linux/ramips/mt7620/base-files/etc/board.d/01_leds
+#echo 'DHCP'
+uci set network.RNDIS=interface
+uci set network.RNDIS.ifname=usb0
+uci set network.RNDIS.proto=dhcp
+uci set network.RNDISv6=interface
+uci set network.RNDISv6.ifname=usb0
+uci set network.RNDISv6.proto=dhcpv6
+uci set network.RNDISv6.reqaddress=try
+uci set network.RNDISv6.reqprefix=auto
+uci commit network
+uci set firewall.@zone[1].network='wan wan6 RNDIS RNDISv6'
+uci commit firewall'
+
 uci set luci.main.lang=zh_cn
 uci commit luci
 
@@ -10,10 +31,10 @@ uci commit system
 uci set fstab.@global[0].anon_mount=1
 uci commit fstab
 
-rm -f /usr/lib/lua/luci/view/admin_status/index/mwan.htm
-rm -f /usr/lib/lua/luci/view/admin_status/index/upnp.htm
-rm -f /usr/lib/lua/luci/view/admin_status/index/ddns.htm
-rm -f /usr/lib/lua/luci/view/admin_status/index/minidlna.htm
+# rm -f /usr/lib/lua/luci/view/admin_status/index/mwan.htm
+# rm -f /usr/lib/lua/luci/view/admin_status/index/upnp.htm
+# rm -f /usr/lib/lua/luci/view/admin_status/index/ddns.htm
+# rm -f /usr/lib/lua/luci/view/admin_status/index/minidlna.htm
 
 sed -i 's/\"services\"/\"nas\"/g' /usr/lib/lua/luci/controller/aria2.lua
 sed -i 's/services/nas/g' /usr/lib/lua/luci/view/aria2/overview_status.htm
@@ -29,30 +50,30 @@ sed -i 's/services/nas/g'  /usr/lib/lua/luci/view/minidlna_status.htm
 
 ln -sf /sbin/ip /usr/bin/ip
 
-sed -i 's#http://downloads.openwrt.org#https://mirrors.cloud.tencent.com/lede#g' /etc/opkg/distfeeds.conf
+# sed -i 's#http://downloads.openwrt.org#https://mirrors.cloud.tencent.com/lede#g' /etc/opkg/distfeeds.conf
 sed -i 's/root::0:0:99999:7:::/root:$1$V4UetPzk$CYXluq4wUazHjmCDBCqXF.:0:0:99999:7:::/g' /etc/shadow
 
-sed -i "s/# //g" /etc/opkg/distfeeds.conf
-sed -i '/openwrt_luci/ { s/snapshots/releases\/18.06.8/g; }'  /etc/opkg/distfeeds.conf
+# sed -i "s/# //g" /etc/opkg/distfeeds.conf
+# sed -i '/openwrt_luci/ { s/snapshots/releases\/18.06.8/g; }'  /etc/opkg/distfeeds.conf
 
-sed -i '/REDIRECT --to-ports 53/d' /etc/firewall.user
-echo "iptables -t nat -A PREROUTING -p udp --dport 53 -j REDIRECT --to-ports 53" >> /etc/firewall.user
-echo "iptables -t nat -A PREROUTING -p tcp --dport 53 -j REDIRECT --to-ports 53" >> /etc/firewall.user
+# sed -i '/REDIRECT --to-ports 53/d' /etc/firewall.user
+# echo "iptables -t nat -A PREROUTING -p udp --dport 53 -j REDIRECT --to-ports 53" >> /etc/firewall.user
+# echo "iptables -t nat -A PREROUTING -p tcp --dport 53 -j REDIRECT --to-ports 53" >> /etc/firewall.user
 
 sed -i '/option disabled/d' /etc/config/wireless
 sed -i '/set wireless.radio${devidx}.disabled/d' /lib/wifi/mac80211.sh
 
 sed -i '/DISTRIB_REVISION/d' /etc/openwrt_release
-echo "DISTRIB_REVISION='R21.2.1'" >> /etc/openwrt_release
+echo "DISTRIB_REVISION='Mifi'" >> /etc/openwrt_release
 sed -i '/DISTRIB_DESCRIPTION/d' /etc/openwrt_release
 echo "DISTRIB_DESCRIPTION='OpenWrt '" >> /etc/openwrt_release
 
 sed -i '/log-facility/d' /etc/dnsmasq.conf
 echo "log-facility=/dev/null" >> /etc/dnsmasq.conf
 
-sed -i 's/cbi.submit\"] = true/cbi.submit\"] = \"1\"/g' /usr/lib/lua/luci/dispatcher.lua
+# sed -i 's/cbi.submit\"] = true/cbi.submit\"] = \"1\"/g' /usr/lib/lua/luci/dispatcher.lua
 
-echo 'hsts=0' > /root/.wgetrc
+# echo 'hsts=0' > /root/.wgetrc
 
 rm -rf /tmp/luci-modulecache/
 rm -f /tmp/luci-indexcache
