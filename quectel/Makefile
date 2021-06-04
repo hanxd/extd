@@ -1,6 +1,6 @@
 include $(TOPDIR)/rules.mk
 
-PKG_NAME:=quectel-cm
+PKG_NAME:=quectel-CM
 PKG_VERSION:=1.000
 PKG_BUILD_DIR:= $(BUILD_DIR)/$(PKG_NAME)
 
